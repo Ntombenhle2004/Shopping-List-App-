@@ -5,9 +5,9 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./routes/protectRoute";
-import "./App.css";
 import PrivacySecurity from "./pages/privacy";
 import Landing from "./pages/landing";
+import "./App.css";
 
 const App: React.FC = () => (
   <Router>

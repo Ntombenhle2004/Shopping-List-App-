@@ -349,17 +349,12 @@ height: 100vh;
 }
 
 
-
-
-
-
 /* Home Container */
 .home-container {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0 auto;
   padding: 20px;
-  min-height: calc(100vh - 200px);
   font-family: Arial, sans-serif;
 
 }
@@ -741,7 +736,8 @@ height: 100vh;
     grid-template-columns: 1fr;
   }
   .home-container {
-    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
   }
   .controls { flex-direction: column; align-items: stretch; }
   .controls input, .controls select { width: 100%; }
