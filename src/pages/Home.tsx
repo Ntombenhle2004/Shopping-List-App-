@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../Reduxhooks";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   fetchItems,
   addItem,
@@ -24,14 +24,23 @@ const categories = [
 
 const Home: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { items, loading, error, success } = useAppSelector(
     (state) => state.shoppingList
   );
   const { user } = useAppSelector((state) => state.login);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Get search and sort from URL
   const searchQuery = searchParams.get("search") || "";
   const sortQuery = (searchParams.get("sort") || "dateAdded") as
+    | "name"
+    | "category"
+    | "dateAdded";
+
+  // Get item search and sort from URL
+  const itemSearchQuery = searchParams.get("itemSearch") || "";
+  const itemSortQuery = (searchParams.get("itemSort") || "dateAdded") as
     | "name"
     | "category"
     | "dateAdded";
@@ -41,7 +50,7 @@ const Home: React.FC = () => {
   const [editingList, setEditingList] = useState<Item | null>(null);
   const [newList, setNewList] = useState<Omit<Item, "userId">>({
     name: "",
-    quantity: 1,
+    quantity: 0, // Will be calculated automatically
     category: "",
     notes: "",
     image: "",
@@ -60,6 +69,13 @@ const Home: React.FC = () => {
     dateAdded: "",
   });
 
+  // Check if user is logged in, redirect if not
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
   useEffect(() => {
     if (user?.id) dispatch(fetchItems(user.id));
   }, [dispatch, user]);
@@ -76,17 +92,53 @@ const Home: React.FC = () => {
     }
   }, [error, success, dispatch, user]);
 
-  // --- Search / Sort ---
+  // --- Search / Sort with URL updates ---
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
-    if (value) params.set("search", value);
-    else params.delete("search");
+    if (value.trim()) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    // Keep the existing sort parameter
+    if (sortQuery) {
+      params.set("sort", sortQuery);
+    }
     setSearchParams(params);
   };
 
   const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("sort", value);
+    // Keep the existing search parameter
+    if (searchQuery) {
+      params.set("search", searchQuery);
+    }
+    setSearchParams(params);
+  };
+
+  // --- Item Search / Sort with URL updates ---
+  const handleItemSearchChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      params.set("itemSearch", value);
+    } else {
+      params.delete("itemSearch");
+    }
+    // Keep existing parameters
+    if (searchQuery) params.set("search", searchQuery);
+    if (sortQuery) params.set("sort", sortQuery);
+    if (itemSortQuery) params.set("itemSort", itemSortQuery);
+    setSearchParams(params);
+  };
+
+  const handleItemSortChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("itemSort", value);
+    // Keep existing parameters
+    if (searchQuery) params.set("search", searchQuery);
+    if (sortQuery) params.set("sort", sortQuery);
+    if (itemSearchQuery) params.set("itemSearch", itemSearchQuery);
     setSearchParams(params);
   };
 
@@ -103,7 +155,7 @@ const Home: React.FC = () => {
 
   const openAddListModal = () => {
     setEditingList(null);
-    setNewList({ name: "", quantity: 1, category: "", notes: "", image: "" });
+    setNewList({ name: "", quantity: 0, category: "", notes: "", image: "" });
     setShowAddListModal(true);
   };
 
@@ -132,7 +184,6 @@ const Home: React.FC = () => {
     if (editingList) {
       const hasChanges =
         newList.name !== editingList.name ||
-        newList.quantity !== editingList.quantity ||
         newList.category !== editingList.category ||
         newList.notes !== (editingList.notes || "") ||
         newList.image !== (editingList.image || "");
@@ -141,19 +192,27 @@ const Home: React.FC = () => {
         return;
       }
 
+      // Keep the current item count when updating
+      const currentItemCount = items.filter(
+        (i) => (i as any).listId === editingList.id
+      ).length;
+
       await dispatch(
         updateItem({
           ...newList,
           id: editingList.id,
           userId: user.id,
           dateAdded: editingList.dateAdded,
+          quantity: currentItemCount, // Use current item count
         } as Item)
       );
     } else {
-      await dispatch(addItem({ ...newList, userId: user.id } as any));
+      await dispatch(
+        addItem({ ...newList, userId: user.id, quantity: 0 } as any)
+      ); // Start with 0 items
     }
 
-    setNewList({ name: "", quantity: 1, category: "", notes: "", image: "" });
+    setNewList({ name: "", quantity: 0, category: "", notes: "", image: "" });
     setEditingList(null);
     setShowAddListModal(false);
   };
@@ -162,10 +221,17 @@ const Home: React.FC = () => {
   const openViewModal = (list: Item) => {
     setSelectedList(list);
     setViewModalOpen(true);
+    // Don't reset - keep URL params
   };
+
   const closeViewModal = () => {
     setViewModalOpen(false);
     setSelectedList(null);
+    // Clear item search/sort from URL when closing modal
+    const params = new URLSearchParams(searchParams);
+    params.delete("itemSearch");
+    params.delete("itemSort");
+    setSearchParams(params);
   };
 
   // --- Add / Update Item ---
@@ -237,6 +303,17 @@ const Home: React.FC = () => {
       );
     }
 
+    // Update the parent list's quantity count
+    const updatedItemCount =
+      items.filter((i) => (i as any).listId === selectedList.id).length +
+      (editingItem ? 0 : 1);
+    await dispatch(
+      updateItem({
+        ...selectedList,
+        quantity: updatedItemCount,
+      } as Item)
+    );
+
     setAddItemModalOpen(false);
     setEditingItem(null);
     setNewItem({ name: "", category: "", quantity: 1, dateAdded: "" });
@@ -264,13 +341,38 @@ const Home: React.FC = () => {
       "Are you sure you want to delete this item?"
     );
     if (!confirmed) return;
+
     await dispatch(deleteItem(id));
+
+    // Update the parent list's quantity count after deletion
+    if (selectedList) {
+      const updatedItemCount =
+        items.filter((i) => (i as any).listId === selectedList.id).length - 1;
+      await dispatch(
+        updateItem({
+          ...selectedList,
+          quantity: updatedItemCount,
+        } as Item)
+      );
+    }
   };
 
-  // --- Filter lists ---
+  // --- Filter lists by name AND category ---
   const filteredLists = items
     .filter((i) => i.userId === user?.id && (i as any).listId === undefined)
-    .filter((i) => i.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .map((list) => {
+      // Calculate actual item count for each list
+      const itemCount = items.filter(
+        (i) => (i as any).listId === list.id
+      ).length;
+      return { ...list, quantity: itemCount };
+    })
+    .filter((i) => {
+      const searchLower = searchQuery.toLowerCase();
+      const nameMatch = i.name.toLowerCase().includes(searchLower);
+      const categoryMatch = i.category.toLowerCase().includes(searchLower);
+      return nameMatch || categoryMatch;
+    })
     .sort((a, b) => {
       if (sortQuery === "name") return a.name.localeCompare(b.name);
       if (sortQuery === "category") return a.category.localeCompare(b.category);
@@ -290,22 +392,40 @@ const Home: React.FC = () => {
       listItems.map((i) => `• ${i.name} - Quantity: ${i.quantity}`).join("\n");
 
     if (navigator.share) {
-      navigator
-        .share({ title: list.name, text: shareText })
-        // .then(() => alert("List shared successfully!"))
-        .catch(() => {
-          navigator.clipboard.writeText(shareText);
-          alert("List copied to clipboard!");
-        });
+      navigator.share({ title: list.name, text: shareText }).catch(() => {
+        navigator.clipboard.writeText(shareText);
+        alert("List copied to clipboard!");
+      });
     } else {
       navigator.clipboard.writeText(shareText);
       alert("List copied to clipboard!");
     }
   };
 
+  // Filter items in the view modal by search query and sort
   const selectedListItems = selectedList
-    ? items.filter((i) => (i as any).listId === selectedList.id)
+    ? items
+        .filter((i) => (i as any).listId === selectedList.id)
+        .filter((i) => {
+          const searchLower = itemSearchQuery.toLowerCase();
+          const nameMatch = i.name.toLowerCase().includes(searchLower);
+          const categoryMatch = i.category.toLowerCase().includes(searchLower);
+          return nameMatch || categoryMatch;
+        })
+        .sort((a, b) => {
+          if (itemSortQuery === "name") return a.name.localeCompare(b.name);
+          if (itemSortQuery === "category")
+            return a.category.localeCompare(b.category);
+          if (itemSortQuery === "dateAdded")
+            return (a.dateAdded || "").localeCompare(b.dateAdded || "");
+          return 0;
+        })
     : [];
+
+  // Don't render if user is not logged in
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
@@ -314,7 +434,7 @@ const Home: React.FC = () => {
         {/* Search & Sort */}
         <div className="controls">
           <Input
-            placeholder="Search lists..."
+            placeholder="Search by name or category..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
           />
@@ -368,17 +488,6 @@ const Home: React.FC = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Quantity</label>
-                <Input
-                  type="number"
-                  placeholder="1"
-                  value={String(newList.quantity)}
-                  onChange={(e) =>
-                    setNewList({ ...newList, quantity: Number(e.target.value) })
-                  }
-                />
-              </div>
-              <div className="form-group">
                 <label>Notes (optional)</label>
                 <Input
                   placeholder="Add any notes..."
@@ -429,10 +538,16 @@ const Home: React.FC = () => {
             <div className="empty-state">
               <div className="empty-icon">📝</div>
               <h3>No Lists Yet!</h3>
-              <p>Start creating your first shopping list.</p>
-              <Button onClick={openAddListModal} className="btn-primary">
-                Create Your First List
-              </Button>
+              <p>
+                {searchQuery
+                  ? "No lists found matching your search."
+                  : "Start creating your first shopping list."}
+              </p>
+              {!searchQuery && (
+                <Button onClick={openAddListModal} className="btn-primary">
+                  Create Your First List
+                </Button>
+              )}
             </div>
           ) : (
             filteredLists.map((list) => (
@@ -450,7 +565,9 @@ const Home: React.FC = () => {
                   <h3>{list.name}</h3>
                   <p className="category-badge">{list.category}</p>
                   {list.notes && <p className="notes">{list.notes}</p>}
-                  <p className="quantity">Quantity: {list.quantity}</p>
+                  <p className="quantity">
+                    {list.quantity} {list.quantity === 1 ? "Item" : "Items"}
+                  </p>
                 </div>
                 <div className="card-actions">
                   <Button
@@ -485,6 +602,7 @@ const Home: React.FC = () => {
           )}
         </div>
       </div>
+
       {/* VIEW MODAL */}
       {viewModalOpen && selectedList && (
         <div className="fullscreen-modal">
@@ -496,6 +614,26 @@ const Home: React.FC = () => {
               <h2>{selectedList.name}</h2>
               <br />
             </div>
+
+            {/* Search and Sort bar for items */}
+            <div className="modal-controls">
+              <Input
+                placeholder="Search items by name or category..."
+                value={itemSearchQuery}
+                onChange={(e) => handleItemSearchChange(e.target.value)}
+                className="modal-search-input"
+              />
+              <select
+                value={itemSortQuery}
+                onChange={(e) => handleItemSortChange(e.target.value)}
+                className="modal-sort-select"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="category">Sort by Category</option>
+                <option value="dateAdded">Sort by Date Added</option>
+              </select>
+            </div>
+
             <div className="action-bar">
               <Button
                 onClick={() => openAddItemModal()}
@@ -508,14 +646,18 @@ const Home: React.FC = () => {
               <div className="empty-state">
                 <h3>No Items Yet!</h3>
                 <p>
-                  Add items to your {selectedList.name} list to get started.
+                  {itemSearchQuery
+                    ? "No items found matching your search."
+                    : `Add items to your ${selectedList.name} list to get started.`}
                 </p>
-                <Button
-                  onClick={() => openAddItemModal()}
-                  className="btn-primary"
-                >
-                  Add Your First Item
-                </Button>
+                {!itemSearchQuery && (
+                  <Button
+                    onClick={() => openAddItemModal()}
+                    className="btn-primary"
+                  >
+                    Add Your First Item
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="items-table">
@@ -631,6 +773,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+
       <Footer />
     </>
   );
