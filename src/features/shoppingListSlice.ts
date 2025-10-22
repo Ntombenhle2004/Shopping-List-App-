@@ -52,6 +52,8 @@ export const addItem = createAsyncThunk<
   Omit<Item, "id" | "dateAdded">, // input type (userId required, id/dateAdded auto)
   { rejectValue: string }
 >("shoppingList/addItem", async (item, { rejectWithValue }) => {
+  console.log(1002);
+  
   if (!item.name || !item.category) {
     return rejectWithValue("Name and Category are required");
   }
