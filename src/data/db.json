@@ -73,6 +73,25 @@
       "quantity": 0,
       "userId": "51e2",
       "dateAdded": "2025-10-22T08:40:44.111Z"
+    },
+    {
+      "id": "3847",
+      "name": "fgdh",
+      "category": "Groceries",
+      "notes": "",
+      "image": "",
+      "quantity": 1,
+      "userId": "9d11",
+      "dateAdded": "2025-10-22T09:25:58.633Z"
+    },
+    {
+      "id": "45f8",
+      "name": "fgfgh",
+      "category": "Household",
+      "quantity": 1,
+      "dateAdded": "2025-10-22T09:26:07.959Z",
+      "userId": "9d11",
+      "listId": "3847"
     }
   ]
 }
