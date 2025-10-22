@@ -36,7 +36,6 @@ const Home: React.FC = () => {
     | "category"
     | "dateAdded";
 
-  // --- Lists ---
   const [showAddListModal, setShowAddListModal] = useState(false);
   const [editingList, setEditingList] = useState<Item | null>(null);
   const [newList, setNewList] = useState<Omit<Item, "userId">>({
@@ -47,17 +46,14 @@ const Home: React.FC = () => {
     quantity: 0,
   });
 
-  // --- View / Item modals ---
   const [selectedList, setSelectedList] = useState<Item | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
-  // --- Item search/sort ---
   const [itemSearchQuery, setItemSearchQuery] = useState("");
   const [itemSortQuery, setItemSortQuery] = useState<
     "name" | "category" | "dateAdded"
   >("dateAdded");
 
-  // --- Add/Edit Item ---
   const [addItemModalOpen, setAddItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [newItem, setNewItem] = useState({
@@ -67,15 +63,20 @@ const Home: React.FC = () => {
     dateAdded: "",
   });
 
-  // Track if we should show alerts
-  const [shouldShowAlert, setShouldShowAlert] = useState(true);
+  const [suppressNextAlert, setSuppressNextAlert] = useState(false);
 
   useEffect(() => {
     if (user?.id) dispatch(fetchItems(user.id));
   }, [dispatch, user]);
 
   useEffect(() => {
-    if (!shouldShowAlert) return;
+    if (suppressNextAlert) {
+      if (error || success) {
+        dispatch(clearMessages());
+        setSuppressNextAlert(false);
+      }
+      return;
+    }
 
     if (error) {
       alert(error);
@@ -86,10 +87,8 @@ const Home: React.FC = () => {
       dispatch(clearMessages());
       if (user?.id) dispatch(fetchItems(user.id));
     }
-  }, [error, success, dispatch, user, shouldShowAlert]);
+  }, [error, success, dispatch, user, suppressNextAlert]);
 
-
-  // --- Search / Sort (Lists) ---
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set("search", value);
@@ -103,7 +102,6 @@ const Home: React.FC = () => {
     setSearchParams(params);
   };
 
-  // --- Search / Sort (Items) ---
   const handleItemSearchChange = (value: string) => {
     setItemSearchQuery(value);
   };
@@ -112,7 +110,6 @@ const Home: React.FC = () => {
     setItemSortQuery(value as "name" | "category" | "dateAdded");
   };
 
-  // --- Add/Edit List handlers ---
   const handleListImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -141,7 +138,6 @@ const Home: React.FC = () => {
     setShowAddListModal(true);
   };
 
-  // Calculate items count for a list
   const getListItemCount = (listId?: number) => {
     if (!listId) return 0;
     return items.filter((i) => (i as any).listId === listId).length;
@@ -192,7 +188,6 @@ const Home: React.FC = () => {
     setShowAddListModal(false);
   };
 
-  // --- View list ---
   const openViewModal = (list: Item) => {
     setSelectedList(list);
     setViewModalOpen(true);
@@ -204,7 +199,6 @@ const Home: React.FC = () => {
     setItemSortQuery("dateAdded");
   };
 
-  // --- Add / Update Item ---
   const openAddItemModal = (item?: Item) => {
     if (item) {
       setEditingItem(item);
@@ -253,11 +247,6 @@ const Home: React.FC = () => {
         return;
       }
 
-      // Disable alerts temporarily for the list quantity update
-      setShouldShowAlert(false);
-
-      
-
       await dispatch(
         updateItem({
           ...newItem,
@@ -268,7 +257,10 @@ const Home: React.FC = () => {
         } as any)
       );
 
-      // Update the list's quantity after updating an item
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      setSuppressNextAlert(true);
+
       if (selectedList?.id) {
         const updatedCount = getListItemCount(selectedList.id);
         await dispatch(
@@ -279,13 +271,7 @@ const Home: React.FC = () => {
           } as Item)
         );
       }
-
-      // Re-enable alerts
-      setShouldShowAlert(true);
     } else {
-      // For adding new item, temporarily disable alert for list update
-      setShouldShowAlert(true);
-
       await dispatch(
         addItem({
           ...newItem,
@@ -294,11 +280,9 @@ const Home: React.FC = () => {
           dateAdded: newItem.dateAdded || new Date().toISOString(),
         } as any)
       );
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      setSuppressNextAlert(true);
 
-      // Disable alert for the list quantity update
-      setShouldShowAlert(false);
-
-      // Update the list's quantity after adding an item
       if (selectedList?.id) {
         const updatedCount = getListItemCount(selectedList.id);
         await dispatch(
@@ -309,9 +293,6 @@ const Home: React.FC = () => {
           } as Item)
         );
       }
-
-      // Re-enable alerts
-      setShouldShowAlert(true);
     }
 
     setAddItemModalOpen(false);
@@ -319,7 +300,6 @@ const Home: React.FC = () => {
     setNewItem({ name: "", category: "", quantity: 1, dateAdded: "" });
   };
 
-  // --- Delete ---
   const handleDeleteList = async (id?: number) => {
     if (!id) return;
     const confirmed = window.confirm(
@@ -342,14 +322,12 @@ const Home: React.FC = () => {
     );
     if (!confirmed) return;
 
-    // Disable alerts temporarily for the list quantity update
-    setShouldShowAlert(true);
-
     await dispatch(deleteItem(id));
 
-    setShouldShowAlert(false);
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Update the list's quantity after deleting an item
+    setSuppressNextAlert(true);
+
     if (selectedList?.id) {
       const updatedCount = getListItemCount(selectedList.id);
       await dispatch(
@@ -360,12 +338,8 @@ const Home: React.FC = () => {
         } as Item)
       );
     }
-
-    // Re-enable alerts
-    setShouldShowAlert(true);
   };
 
-  // --- Filter and sort lists (search by name OR category) ---
   const filteredLists = items
     .filter((i) => i.userId === user?.id && (i as any).listId === undefined)
     .filter((i) => {
@@ -383,7 +357,6 @@ const Home: React.FC = () => {
       return 0;
     });
 
-  // --- Filter and Sort Items (search by name OR category) ---
   const selectedListItems = selectedList
     ? items.filter((i) => (i as any).listId === selectedList.id)
     : [];
@@ -426,7 +399,6 @@ const Home: React.FC = () => {
     }
   };
 
-  // Get all unique categories from both lists and items
   const allCategories = Array.from(
     new Set([...categories, ...items.map((i) => i.category).filter(Boolean)])
   );
@@ -435,10 +407,9 @@ const Home: React.FC = () => {
     <>
       <Navbar />
       <div className="home-container">
-        {/* Search & Sort */}
         <div className="controls">
           <Input
-            placeholder="Search by list name or category..."
+            placeholder="Search list or category..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
           />
@@ -456,7 +427,6 @@ const Home: React.FC = () => {
           </Button>
         </div>
 
-        {/* Add/Edit List Modal */}
         {showAddListModal && (
           <div
             className="modal-overlay"
@@ -532,7 +502,6 @@ const Home: React.FC = () => {
           </div>
         )}
 
-        {/* Lists grid */}
         <div className="items-grid">
           {loading ? (
             <div className="empty-state">
@@ -600,7 +569,6 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* VIEW MODAL */}
       {viewModalOpen && selectedList && (
         <div className="fullscreen-modal">
           <div className="fullscreen-modal-content">
@@ -689,7 +657,6 @@ const Home: React.FC = () => {
               </div>
             )}
 
-            {/* ADD/UPDATE ITEM MODAL */}
             {addItemModalOpen && (
               <div className="modal-overlay" onClick={closeItemModal}>
                 <div className="modal" onClick={(e) => e.stopPropagation()}>

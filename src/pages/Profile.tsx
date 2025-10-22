@@ -35,7 +35,6 @@ const Profile: React.FC = () => {
       });
   }, [profile]);
 
-  // Auto-clear feedback messages after 3 seconds
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => setMessage(""), 3000);
@@ -51,7 +50,6 @@ const Profile: React.FC = () => {
     e.preventDefault();
     if (!profile) return;
 
-    // Check if any field has changed
     const hasChanges =
       form.name !== profile.name ||
       form.surname !== profile.surname ||
@@ -64,7 +62,6 @@ const Profile: React.FC = () => {
       return;
     }
 
-    // If changing password, require current password
     if (form.newPassword) {
       if (!form.currentPassword) {
         setMessage("Enter your current password to set a new password.");
@@ -87,24 +84,21 @@ const Profile: React.FC = () => {
     }
 
     try {
-      // Prepare updated data
       const updateData: any = {
         id: profile.id,
         name: form.name,
         surname: form.surname,
         email: form.email,
         cell: form.cell,
-        password: profile.password, // Keep old password unless changed
+        password: profile.password, 
       };
 
       if (form.newPassword) {
         updateData.password = bcrypt.hashSync(form.newPassword, 10);
       }
 
-      // Update in DB
       await api.put(`/users/${profile.id}`, updateData);
 
-      // Update Redux state
       dispatch(updateProfile(updateData));
       dispatch(updateUser(updateData));
 
@@ -123,8 +117,6 @@ const Profile: React.FC = () => {
         <div className="profile-container">
           <h2>Profile</h2>
           {message && <p className="message">{message}</p>}
-
-          {/* View Mode */}
           {!showEdit && profile && (
             <div className="profile-view">
               <p>
@@ -142,8 +134,6 @@ const Profile: React.FC = () => {
               <Button onClick={() => setShowEdit(true)}>Edit Profile</Button>
             </div>
           )}
-
-          {/* Edit Mode */}
           {showEdit && (
             <form className="profile-form" onSubmit={handleSubmit}>
               <Input

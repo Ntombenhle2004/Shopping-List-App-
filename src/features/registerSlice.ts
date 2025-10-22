@@ -26,24 +26,20 @@ const initialState: RegisterState = {
   success: null,
 };
 
-// ✅ Fix: type the rejectWithValue as string
 export const registerUser = createAsyncThunk<
   void,
   RegisterData,
   { rejectValue: string }
 >("register/registerUser", async (userData, { rejectWithValue }) => {
   try {
-    // GET users with email filter
     const res = await api.get<RegisterData[]>(`/users?email=${userData.email}`);
 
     if (res.data.length > 0) {
       return rejectWithValue("User already registered");
     }
 
-    // Hash password
     const hashedPassword = bcrypt.hashSync(userData.password, 10);
 
-    // POST new user
     await api.post("/users", { ...userData, password: hashedPassword });
 
     return;
@@ -61,13 +57,7 @@ const registerSlice = createSlice({
     clearMessage: (state) => {
       state.error = null;
       state.success = null;
-    },
-
-
-
-
-
-    
+    },  
   },
   extraReducers: (builder) => {
     builder

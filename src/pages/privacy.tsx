@@ -16,7 +16,7 @@ const PrivacySecurity: React.FC = () => {
         </p>
 
         <section className="privacy-section">
-          <h3>🔒 Data Protection</h3>
+          <h3> Data Protection</h3>
           <p>
             All personal data you provide (such as name, email, and contact
             details) is securely stored and never shared with unauthorized third
@@ -26,7 +26,7 @@ const PrivacySecurity: React.FC = () => {
         </section>
 
         <section className="privacy-section">
-          <h3>📑 Compliance</h3>
+          <h3>Compliance</h3>
           <p>
             Our system complies with data protection regulations, including{" "}
             <strong>POPIA (Protection of Personal Information Act)</strong> in
@@ -37,7 +37,7 @@ const PrivacySecurity: React.FC = () => {
         </section>
 
         <section className="privacy-section">
-          <h3>👤 User Control</h3>
+          <h3>User Control</h3>
           <p>
             You have the right to access, update, or delete your personal data
             at any time. Profile management options allow you to review your
@@ -46,7 +46,7 @@ const PrivacySecurity: React.FC = () => {
         </section>
 
         <section className="privacy-section">
-          <h3>⚠️ Security Measures</h3>
+          <h3>Security Measures</h3>
           <p>
             We implement security best practices such as authentication,
             role-based access control, and regular monitoring to protect your
@@ -55,7 +55,7 @@ const PrivacySecurity: React.FC = () => {
         </section>
 
         <section className="privacy-section">
-          <h3>📧 Contact Us</h3>
+          <h3>Contact Us</h3>
           <p>
             If you have any concerns or requests about your data, you may
             contact us at{" "}

@@ -31,8 +31,6 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Basic validation
     if (
       !form.name ||
       !form.surname ||

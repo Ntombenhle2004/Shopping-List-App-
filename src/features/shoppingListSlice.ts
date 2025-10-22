@@ -7,7 +7,7 @@ import { api } from "../api/api";
 
 export interface Item {
   id?: number;
-  userId?: number; // ✅ Each item belongs to a user
+  userId?: number; 
   name: string;
   quantity: number;
   category: string;
@@ -30,10 +30,9 @@ const initialState: ShoppingListState = {
   success: null,
 };
 
-// Fetch items for specific user
 export const fetchItems = createAsyncThunk<
   Item[],
-  number, // ✅ Pass userId
+  number, 
   { rejectValue: string }
 >("shoppingList/fetchItems", async (userId, { rejectWithValue }) => {
   try {
@@ -45,11 +44,9 @@ export const fetchItems = createAsyncThunk<
   }
 });
 
-
-// Add item
 export const addItem = createAsyncThunk<
-  Item,                          // return type
-  Omit<Item, "id" | "dateAdded">, // input type (userId required, id/dateAdded auto)
+  Item,                          
+  Omit<Item, "id" | "dateAdded">, 
   { rejectValue: string }
 >("shoppingList/addItem", async (item, { rejectWithValue }) => {
   console.log(1002);
@@ -73,7 +70,6 @@ export const addItem = createAsyncThunk<
   }
 });
 
-// Update item
 export const updateItem = createAsyncThunk<Item, Item, { rejectValue: string }>(
   "shoppingList/updateItem",
   async (item, { rejectWithValue }) => {
@@ -89,7 +85,6 @@ export const updateItem = createAsyncThunk<Item, Item, { rejectValue: string }>(
   }
 );
 
-// Delete item
 export const deleteItem = createAsyncThunk<
   number,
   number,
@@ -114,14 +109,12 @@ const shoppingListSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch
       .addCase(fetchItems.fulfilled, (state, action: PayloadAction<Item[]>) => {
         state.items = action.payload;
       })
       .addCase(fetchItems.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to fetch items";
       })
-      // Add
       .addCase(addItem.fulfilled, (state, action: PayloadAction<Item>) => {
         state.items.push(action.payload);
         state.success = "Item added successfully";
@@ -129,7 +122,6 @@ const shoppingListSlice = createSlice({
       .addCase(addItem.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to add item";
       })
-      // Update
       .addCase(updateItem.fulfilled, (state, action: PayloadAction<Item>) => {
         const index = state.items.findIndex((i) => i.id === action.payload.id);
         if (index !== -1) state.items[index] = action.payload;
@@ -138,7 +130,6 @@ const shoppingListSlice = createSlice({
       .addCase(updateItem.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to update item";
       })
-      // Delete
       .addCase(deleteItem.fulfilled, (state, action: PayloadAction<number>) => {
         state.items = state.items.filter((i) => i.id !== action.payload);
         state.success = "Item deleted successfully";

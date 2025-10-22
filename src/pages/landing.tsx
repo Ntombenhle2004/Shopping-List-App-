@@ -8,7 +8,6 @@ const Landing: React.FC = () => {
 
   return (
     <div className="landing-container">
-      {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
           <h1>
@@ -41,8 +40,6 @@ const Landing: React.FC = () => {
           />
         </div>
       </section>
-
-      {/* Features Section */}
       <section className="features">
         <h2>Why You’ll Love It</h2>
         <div className="features-grid">
@@ -79,8 +76,6 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* About Section */}
       <section className="about">
         <h2>About Shopping List</h2>
         <p>
