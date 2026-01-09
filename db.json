@@ -260,6 +260,36 @@
       "image": "",
       "userId": "51e2",
       "dateAdded": "2025-10-09T10:19:41.057Z"
+    },
+    {
+      "id": "1b19",
+      "name": "ftgyery",
+      "category": "Household",
+      "notes": "",
+      "image": "",
+      "quantity": 0,
+      "userId": "0b47",
+      "dateAdded": "2025-11-18T08:36:15.841Z"
+    },
+    {
+      "id": "a047",
+      "name": "derygtdertg",
+      "category": "Electronics",
+      "notes": "",
+      "image": "",
+      "quantity": 0,
+      "userId": "0b47",
+      "dateAdded": "2025-11-18T08:36:22.921Z"
+    },
+    {
+      "id": "3e26",
+      "name": "retert",
+      "category": "Clothing",
+      "notes": "",
+      "image": "",
+      "quantity": 0,
+      "userId": "0b47",
+      "dateAdded": "2025-11-18T08:36:31.225Z"
     }
   ]
 }
