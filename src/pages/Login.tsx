@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../Reduxhooks";
 import { loginUser } from "../features/loginSlice";
 import Input from "../components/Input";
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
           />
           <Button type="submit">{loading ? "Loading..." : "Login"}</Button>
           <p>
-            Don't have an account? <a href="/register">Register</a>
+            Don't have an account?  <Link to="/register">Register</Link>
           </p>
         </form>
       </div>
