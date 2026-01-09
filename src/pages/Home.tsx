@@ -510,7 +510,6 @@ const Home: React.FC = () => {
             </div>
           ) : filteredLists.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">📝</div>
               <h3>No Lists Yet!</h3>
               <p>Start creating your first shopping list.</p>
               <Button onClick={openAddListModal} className="btn-primary">
@@ -525,7 +524,7 @@ const Home: React.FC = () => {
                     <img src={list.image} alt={list.name} />
                   ) : (
                     <div className="placeholder-image">
-                      <span>📋</span>
+                    
                     </div>
                   )}
                 </div>
