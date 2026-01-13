@@ -115,18 +115,42 @@ const shoppingListSlice = createSlice({
       .addCase(fetchItems.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to fetch items";
       })
+
       .addCase(addItem.fulfilled, (state, action: PayloadAction<Item>) => {
         state.items.push(action.payload);
-        state.success = "Item added successfully";
+
+        const isList = !(action.payload as any).listId;
+
+        state.success = isList
+          ? "List added successfully"
+          : "Item added successfully";
       })
+
       .addCase(addItem.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to add item";
       })
-      .addCase(updateItem.fulfilled, (state, action: PayloadAction<Item>) => {
-        const index = state.items.findIndex((i) => i.id === action.payload.id);
-        if (index !== -1) state.items[index] = action.payload;
-        state.success = "Item updated successfully";
-      })
+
+
+
+
+
+
+     .addCase(updateItem.fulfilled, (state, action: PayloadAction<Item>) => {
+  const index = state.items.findIndex((i) => i.id === action.payload.id);
+  if (index !== -1) state.items[index] = action.payload;
+
+  const isList = !(action.payload as any).listId;
+
+  state.success = isList
+    ? "List updated successfully"
+    : "Item updated successfully";
+})
+
+
+
+
+
+
       .addCase(updateItem.rejected, (state, action) => {
         state.error = action.payload ?? "Failed to update item";
       })

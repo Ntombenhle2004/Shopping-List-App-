@@ -14,6 +14,8 @@ import Input from "../components/Input";
 import Navbar from "../components/navBAr";
 import Footer from "../components/footer";
 
+import { useRef } from "react";
+
 const categories = [
   "Groceries",
   "Household",
@@ -63,31 +65,34 @@ const Home: React.FC = () => {
     dateAdded: "",
   });
 
-  const [suppressNextAlert, setSuppressNextAlert] = useState(false);
+ const suppressAlertsRef = useRef(false);
 
   useEffect(() => {
     if (user?.id) dispatch(fetchItems(user.id));
   }, [dispatch, user]);
 
-  useEffect(() => {
-    if (suppressNextAlert) {
-      if (error || success) {
-        dispatch(clearMessages());
-        setSuppressNextAlert(false);
-      }
-      return;
-    }
+ useEffect(() => {
+   if (suppressAlertsRef.current) {
+     if (error || success) {
+       dispatch(clearMessages());
+     }
+     return;
+   }
 
-    if (error) {
-      alert(error);
-      dispatch(clearMessages());
-    }
-    if (success) {
-      alert(success);
-      dispatch(clearMessages());
-      if (user?.id) dispatch(fetchItems(user.id));
-    }
-  }, [error, success, dispatch, user, suppressNextAlert]);
+   if (error) {
+     alert(error);
+     dispatch(clearMessages());
+   }
+
+   if (success) {
+     alert(success);
+     dispatch(clearMessages());
+     if (user?.id) dispatch(fetchItems(user.id));
+   }
+ }, [error, success, dispatch, user]);
+
+
+
 
   const handleSearchChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -259,7 +264,8 @@ const Home: React.FC = () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      setSuppressNextAlert(true);
+      suppressAlertsRef.current = true;
+
 
       if (selectedList?.id) {
         const updatedCount = getListItemCount(selectedList.id);
@@ -281,7 +287,8 @@ const Home: React.FC = () => {
         } as any)
       );
       await new Promise((resolve) => setTimeout(resolve, 100));
-      setSuppressNextAlert(true);
+    suppressAlertsRef.current = true;
+
 
       if (selectedList?.id) {
         const updatedCount = getListItemCount(selectedList.id);
@@ -300,20 +307,44 @@ const Home: React.FC = () => {
     setNewItem({ name: "", category: "", quantity: 1, dateAdded: "" });
   };
 
-  const handleDeleteList = async (id?: number) => {
-    if (!id) return;
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this list and all its items?"
-    );
-    if (!confirmed) return;
+ const handleDeleteList = async (id?: number) => {
+   if (!id) return;
 
-    const listItems = items.filter((i) => (i as any).listId === id);
-    for (const item of listItems) {
-      if (item.id) await dispatch(deleteItem(item.id));
-    }
+   const confirmed = window.confirm(
+     "Are you sure you want to delete this list and all its items?"
+   );
+   if (!confirmed) return;
 
-    await dispatch(deleteItem(id));
-  };
+   
+   suppressAlertsRef.current = true;
+
+   const listItems = items.filter((i) => (i as any).listId === id);
+
+   for (const item of listItems) {
+     if (item.id) {
+       await dispatch(deleteItem(item.id));
+     }
+   }
+
+   await dispatch(deleteItem(id));
+
+   dispatch(clearMessages());
+
+   alert("List and items deleted successfully");
+
+   if (user?.id) {
+     dispatch(fetchItems(user.id));
+   }
+
+   suppressAlertsRef.current = false;
+ };
+
+  
+
+
+
+
+
 
   const handleDeleteItem = async (id?: number) => {
     if (!id) return;
@@ -326,7 +357,8 @@ const Home: React.FC = () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    setSuppressNextAlert(true);
+  suppressAlertsRef.current = true;
+
 
     if (selectedList?.id) {
       const updatedCount = getListItemCount(selectedList.id);
