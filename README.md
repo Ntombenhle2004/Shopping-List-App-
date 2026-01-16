@@ -1,30 +1,30 @@
-# 🛒 Shopping List App (React + Redux + Vite + TypeScript)
+# Shopping List App (React + Redux + Vite + TypeScript)
 
 A modern **shopping list application** built with **React 18**, **Redux Toolkit**, **TypeScript**, and **Vite**.  
 Supports user registration, login, adding shopping lists with images, search and sort functionality, profile management, and secure protected routes.  
 
 ---
 
-## 🚀 Features
+##  Features
 
-- 👤 **User Authentication**
+-  **User Authentication**
   - Registration with encrypted passwords
   - Login with password verification
   - Logout functionality
-- 📝 **Shopping List Management**
+-  **Shopping List Management**
   - Add new shopping lists with name, quantity, category, notes, and optional image
   - Search and sort shopping lists
   - LocalStorage + Redux state management
-- 🔒 **Protected Routes**
+-  **Protected Routes**
   - `/home`, `/profile`, `/privacy` accessible only to logged-in users
-- ⚡ **Profile Management**
+-  **Profile Management**
   - Update user information and profile picture
-- 📦 **Backend**
+-  **Backend**
   - JSON Server used as mock backend for storing users and lists
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Redux Toolkit, React Router DOM v6
 - **State Management**: Redux Toolkit + localStorage persistence
@@ -34,7 +34,7 @@ Supports user registration, login, adding shopping lists with images, search and
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 ### Main
 - `react` ^18.2.0
@@ -57,7 +57,7 @@ Supports user registration, login, adding shopping lists with images, search and
 
 ---
 
-## ⚡ Running the Project
+## Running the Project
 
 Clone the repository and install dependencies:
 
@@ -67,10 +67,11 @@ cd shopping-list-app
 npm install
 ```
 
-Start JSON Server (mock backend):
+JSON Server (backend):
 
 ```bash
-npx json-server --watch db.json --port 5000
+json-server is deployed(Live)
+
 ```
 
 Run development server:
@@ -93,7 +94,7 @@ npm run preview
 
 ---
 
-## 📝 Pseudocode
+## Pseudocode
 
 Below is high-level pseudocode for the main app logic:
 
@@ -178,7 +179,7 @@ END FUNCTION
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 src/
@@ -201,6 +202,4 @@ src/
 
 ---
 
-## 📝 License
 
-MIT License © 2025 — Built for learning & demo purposes.
