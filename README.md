@@ -1,3 +1,5 @@
+<img src="https://socialify.git.ci/Ntombenhle2004/Shopping-List-App-/image?language=1&owner=1&name=1&stargazers=1&theme=Light" alt="Shopping-List-App-" width="640" height="320" />
+
 # Shopping List App (React + Redux + Vite + TypeScript)
 
 A modern **shopping list application** built with **React 18**, **Redux Toolkit**, **TypeScript**, and **Vite**.  
